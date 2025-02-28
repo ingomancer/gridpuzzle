@@ -11,10 +11,10 @@ X....X
 XXXXXX
 """
 
+visited = {}
 
 def main():
     grid = {}
-    visited = {}
     start_pos = None
     end_pos = None
     move = 0
@@ -27,24 +27,37 @@ def main():
             if char == "M":
                 end_pos = (x, y)
 
-    solution = solve(grid, start_pos, end_pos, visited, move, moves)
+    solution = solve(grid, start_pos, end_pos, move, moves)
     for pos in solution:
         print_grid_with_pos(grid, pos)
         print()
+    print(solution)
+    print(len(solution))
 
 
-def solve(grid, pos, end_pos, visited, move, moves):
+def solve(grid, pos, end_pos, move, moves):
     step = moves[move % 3]
     if (pos, step) in visited:
-        return None
+        if visited[(pos, step)] <= move:
+            return None
+        else:
+            visited[(pos, step)] = move
     if pos == end_pos:
         return [pos]
-    visited[(pos, step)] = True
+    visited[(pos, step)] = move
+    shortest_solve = None
     for neighbour in get_moves(pos, grid, step):
-        poslist = solve(grid, neighbour, end_pos, visited, move + 1, moves)
+        poslist = solve(grid, neighbour, end_pos, move + 1, moves)
         if poslist is not None:
-            return [pos] + poslist
-    return None
+            if shortest_solve is None:
+                shortest_solve = poslist
+            elif len(shortest_solve) > len(poslist):
+                shortest_solve = poslist
+    if shortest_solve is None:
+        return None
+    else: 
+        return [pos] + shortest_solve
+
 
 
 def print_grid_with_pos(grid, pos):
@@ -55,7 +68,6 @@ def print_grid_with_pos(grid, pos):
             else:
                 print(grid[(x, y)], end="")
         print()
-    sleep(0.5)
 
 
 def get_moves(pos, grid, step):
